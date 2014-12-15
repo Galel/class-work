@@ -1,0 +1,58 @@
+	//根据需要定义局部变量     	 
+  /*  
+    //定时发送用主程序部分   2006.10.14 
+	 long int i;
+     USHORT kv;
+	   
+    to_ush=20;  // 试to_long[0]、to_long[3]均正确（当然，驱程的中断服务例程也应相应改动）
+    DeliverToInVariable();
+    io_write(0x7f01,0x40);
+    for(i=0;i<1000;i++);
+	io_write(0x7f01,0x8e);
+    io_write(0x7f01,0x04);
+	outportb(0x58,1);
+	outportb(0x4c,1);
+	for(;;)
+	{ printf("\n\n---------------------------------------------\n");
+	  printf("输入发送字符串的长度（2～20, 小于2或大于20为退出）：");
+	  scanf("%d",&kv);
+	  if ((kv>20)||(kv<2)) break;
+	  to_ush=kv;
+	  DeliverToInVariable();      // 传递到中断驱动程序中
+	 
+	}
+	printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();
+*/
+   
+	// 中断方法扫描键盘并数码管显示用主程序	 2006.10.14
+    io_write(0x7e03,0x36);    //CNT0   CLK0接QA（4.9152MHz 2分频）0.005秒定时中断 
+   	io_write(0x7e00,48);
+	io_write(0x7e00,0);
+	
+	io_write(0x7e03,0x76);    //CNT1   
+   	io_write(0x7e01,0);
+	io_write(0x7e01,1);
+	
+	outportb(0x4c,1);
+   
+	DeliverToLamp(0);
+	
+for(;;)	
+{ 	int i;
+    UCHAR ch;	
+   	do
+	{ ch=DeliverFromLamp();
+	  for(i=0;i<10000;i++);
+	}	while(ch==0);
+	DeliverToLamp(0);
+	DeliverFromOutVariable();
+	printf("%x ",from_ush[4]); 
+}
+
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();
+    outportb(0x4c,0);
+

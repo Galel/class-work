@@ -1,0 +1,44 @@
+
+  #define addr_273 0x7800
+  int i,k;
+  long int j;	
+  long int n1= 100000000;  
+  long int n2= 500000;
+
+lp:
+  
+     io_write(addr_273,0xff);    // 开出
+     for (j=0;j<=n1;j++);
+	 io_write(addr_273,0);    // 开出
+     for (j=0;j<=n1;j++);
+
+	 for (i=0;i<=255;i++)
+	{ io_write(addr_273,i);    // 开出
+      for (j=0;j<=n2;j++);
+	}	
+     for (j=0;j<=n1;j++);
+	for (i=255;i>=0;i--)
+	{ io_write(addr_273,i);    // 开出
+      for (j=0;j<=n2;j++);
+	} 
+      for (j=0;j<=n1;j++);
+	
+	for (k=1;k<=128;k=k<<1)
+	{ io_write(addr_273,k);    // 开出
+      for (j=0;j<=n2*10;j++);
+	}	
+     for (j=0;j<=n1;j++);
+
+	 
+    for (k=128;k>=1;k=k>>1)
+	{ io_write(addr_273,k);    // 开出
+      for (j=0;j<=n2*10;j++);
+	}	
+    io_write(addr_273,0); 
+	for (j=0;j<=n1;j++);
+
+goto lp;           
+
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();

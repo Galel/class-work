@@ -1,0 +1,83 @@
+#include "nkckdef.h"
+
+extern HANDLE  hhandle;   
+extern SOURCEDATA source;  
+#include "math.h"
+
+GUID ClassGuid = PcinkckDevice_CLASS_GUID;
+
+#define wrcmd_addr  0x80
+#define rdBFAC_addr 0xc0
+#define wrdata_addr 0xa0
+#define rddata_addr 0xe0
+
+void chkbusy(void )   // 检查忙标志
+{ unsigned char ch;
+  do {ch=io_read(rdBFAC_addr); }while(ch&0x80);
+} 
+
+void wrcmd(unsigned char cmd )   // 写命令
+{ chkbusy(); 
+  io_write(wrcmd_addr,cmd);
+ }
+
+void wrdata(unsigned char data )  // 写数据
+{ chkbusy(); 
+  io_write(wrdata_addr,data);     
+  }
+
+unsigned char rddata( )   // 读数据
+{ unsigned char ch;
+  chkbusy(); 
+  ch=io_read(rddata_addr);
+  return(ch);
+}
+
+
+
+main()
+{	HANDLE hDevice = GetDeviceViaInterface((LPGUID)&ClassGuid,0);
+	if( hDevice==NULL) { printf(" FAILED: Could not open PCInkck device\n");
+		            return 1;}
+	printf("Device found, handle open.\n");
+    hhandle=hDevice;
+   
+	//根据需要定义局部变量
+    long int i;
+	int k;
+	unsigned char d[40]="Micro Computer Experement Nankai NKCK  ";// 引号中共16个字符
+    unsigned char ch;
+
+    wrcmd(0x01);  //命令1  清屏
+    wrcmd(0x30);  //命令6  8位数据接口 1行显示 5×7点阵
+    wrcmd(0x06);  //命令3  数据读写后，AC自动增1，画面不移动
+    wrcmd(0x0c);  //命令4  开显示、关光标和闪烁 
+    
+    wrcmd(0x80);  //命令8  设置数据显示存储器DDRAM地址－－第一行第15号地址
+    
+
+  for(i=0;i<39;i++)
+  {wrdata(d[i]);}
+
+
+	k=0;
+	
+lp:	for(i=0;i<20000000;i++);
+    wrcmd(0x80+k);
+    ch=rddata( );
+    printf("%c",ch);
+	wrcmd(0x18);
+	
+	k=k+1;if(k>0x27){k=0;}
+    
+    goto lp;
+ 
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();  
+
+	//以下两行用于关闭设备和结束运行
+	CloseIfOpen();
+    return 0;
+}
+ 

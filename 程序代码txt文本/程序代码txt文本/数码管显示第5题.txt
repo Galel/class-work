@@ -1,0 +1,83 @@
+int clk1,clk2;
+        
+     #define PORT_A  0x7d00
+     #define PORT_B  0x7d01
+     #define PORT_C  0x7d02
+     #define CTRL    0x7d03
+                
+     UCHAR add_column,key_code; 
+     UCHAR  line_scan[4]={0x0e,0x0d,0x0b,0x07};
+     UCHAR bit1,bit2,bit3,bit4,bit_counter,view_code;
+     UCHAR  temp;
+     int i;
+
+	 io_write(CTRL,0x82);  // 初始化8255A，A方式0输出，B口方式0输入
+     bit1=0;bit2=0;bit3=0;bit4=0;bit_counter=0x80;
+lp:
+     io_write(PORT_A,0x0);     // A口输出全0，判有无键按下
+     add_column = io_read(PORT_B);      // 读B口
+     add_column = add_column & 0x0f;
+     if (add_column == 0x0f)  {goto disp; }// 
+     clk1=clock();
+	 do
+		{clk2=clock();}
+	  while((clk2-clk1)<20);
+	 for(i=0;i<=3;i++)
+	 { io_write(PORT_A,line_scan[i]);     // A口输出行扫描码
+   	   add_column = io_read(PORT_B);      // 读B口
+       add_column = add_column & 0x0f;
+       if (add_column == 0x0f)  {goto next; }//
+	  
+	   temp=line_scan[i];
+	   temp=temp<<4;
+	   key_code=temp+add_column;
+	   switch(key_code)
+		{case 0xee: key_code=0;break;
+                 case 0xed: key_code=1;break;
+                 case 0xeb: key_code=2;break;
+                 case 0xe7: key_code=3;break;
+                 case 0xde: key_code=4;break;
+                 case 0xdd: key_code=5;break;
+                 case 0xdb: key_code=6;break;
+                 case 0xd7: key_code=7;break;
+                 case 0xbe: key_code=8;break;
+                 case 0xbd: key_code=9;break;
+                 case 0xb7: key_code=11;break;
+                 default: key_code=255;break;
+		}
+	   
+	   if(key_code==255)goto exit0;
+       if(key_code<=9)
+				{bit1=bit2;bit2=bit3;bit3=bit4;bit4=key_code;}
+       if(key_code==11)
+                {bit4=bit3;bit3=bit2;bit2=bit1;bit1=0;}
+	   do
+		{clk2=clock();
+	 	bit_counter=bit_counter>>1;
+	    if(bit_counter<0x10) bit_counter=0x80; 
+	    switch(bit_counter)
+		 {case 0x10: view_code=bit1+0x10;break;
+          case 0x20: view_code=bit2+0x20;break;
+          case 0x40: view_code=bit3+0x40;break;
+          case 0x80: view_code=bit4+0x80;break;
+          default: break;
+			}
+	     io_write(PORT_C,view_code);
+		}
+		while((clk2-clk1)<250);	 
+next: ;		
+	 }
+disp:  bit_counter=bit_counter>>1;
+	    if(bit_counter<0x10) bit_counter=0x80; 
+	    switch(bit_counter)
+		 {case 0x10: view_code=bit1+0x10;break;
+          case 0x20: view_code=bit2+0x20;break;
+          case 0x40: view_code=bit3+0x40;break;
+          case 0x80: view_code=bit4+0x80;break;
+          default: break;
+		}
+	    io_write(PORT_C,view_code);
+                
+       goto lp;
+  
+ exit0:

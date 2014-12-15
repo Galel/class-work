@@ -1,0 +1,14 @@
+       io_write(0x7e03,0x36);    //CNT0   CLK0接QA（4.9152MHz 2分频）0.1秒定时中断 
+   	io_write(0x7e00,80);
+	io_write(0x7e00,0);
+	
+	io_write(0x7e03,0x76);    //CNT1   
+   	io_write(0x7e01,0);
+	io_write(0x7e01,12);
+	
+	outportb(0x4c,1);
+   
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();
+    outportb(0x4c,0);

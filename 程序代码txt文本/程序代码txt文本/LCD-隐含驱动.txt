@@ -1,0 +1,94 @@
+#include "nkckdef.h"
+
+extern HANDLE  hhandle;   
+extern SOURCEDATA source;  
+#include "math.h"
+
+GUID ClassGuid = PcinkckDevice_CLASS_GUID;
+
+#define wrcmd_addr  0x80
+#define rdBFAC_addr 0xc0
+#define wrdata_addr 0xa0
+#define rddata_addr 0xe0
+
+void chkbusy(void )   // 检查忙标志
+{ unsigned char ch;
+  do {ch=io_read(rdBFAC_addr); }while(ch&0x80);
+} 
+
+void wrcmd(unsigned char cmd )   // 写命令
+{ chkbusy(); 
+  io_write(wrcmd_addr,cmd);
+ }
+
+void wrdata(unsigned char data )  // 写数据
+{ chkbusy(); 
+  io_write(wrdata_addr,data);     
+  }
+
+unsigned char rddata( )   // 读数据
+{ unsigned char ch;
+  chkbusy(); 
+  ch=io_read(rddata_addr);
+  return(ch);
+}
+
+void CGRAM_write()        // 形成自定义字符库
+{ unsigned char c[3][8]={{0x08,0x0f,0x12,0x0f,0x0a,0x1f,0x02,0x02},
+                         {0x0f,0x09,0x0f,0x09,0x0f,0x09,0x11,0x00},                       						
+                         {0x1f,0x11,0x11,0x1f,0x11,0x11,0x1f,0x00}
+						};
+  int i,j;
+  wrcmd(0x40);   //命令7  设置CGRAM地址－－第0号地址
+  for(i=0;i<3;i++)
+  { for(j=0;j<8;j++)
+	{ wrdata(c[i][j]);
+	}
+  }
+}
+
+main()
+{	HANDLE hDevice = GetDeviceViaInterface((LPGUID)&ClassGuid,0);
+	if( hDevice==NULL) { printf(" FAILED: Could not open PCInkck device\n");
+		            return 1;}
+	printf("Device found, handle open.\n");
+    hhandle=hDevice;
+   
+	//根据需要定义局部变量
+    unsigned char data_v;
+    CGRAM_write();   
+  
+    wrcmd(0x01);  //命令1  清屏
+    wrcmd(0x38);  //命令6  8位数据接口 2行显示 5×7点阵
+    wrcmd(0x06);  //命令3  数据读写后，AC自动增1，画面不动
+    wrcmd(0x0f);  //命令4  显示、光标、闪烁开关均为开状态 
+  
+    wrcmd(0x80);  //命令8  设置数据显示存储器DDRAM地址－－第一行第0号地址
+    wrdata('A');
+    wrdata('B');
+    wrdata('*');
+    wrdata(0);   // 显示自定义数据
+    wrdata(1);
+    wrdata(2);
+  
+    wrcmd(0xc0);  //命令8  设置数据显示存储器DDRAM地址－－第二行第0号地址
+    wrdata('Q');
+    wrdata('W');
+
+    wrcmd(0x81); //命令8  设置数据显示存储器DDRAM地址－－第一行第1号地址
+    data_v=rddata();
+    printf("%x  ",data_v);
+
+    wrcmd(0xc8);  //命令8  设置数据显示存储器DDRAM地址－－第二行第8号地址
+    wrdata('1');
+    wrdata('2');
+ 
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();  
+
+	//以下两行用于关闭设备和结束运行
+	CloseIfOpen();
+    return 0;
+}
+ 

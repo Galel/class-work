@@ -1,0 +1,26 @@
+   //根据需要定义局部变量
+    
+    int i;
+    UCHAR temp;
+    float f; 
+                 		
+
+    //以下自行编写所进行的实验代码	    
+        
+	for (i=0;i<=7;i++)
+	{
+	   printf("CH%d",i);
+	   io_write(0x7a00+i,i);     // 送A/D通道地址i，启动转换（与数据无关）
+           temp=io_read(0x7900);     //读EOC
+	   temp = temp & 0x01;
+	   while(temp == 0)
+		  {  temp=io_read(0x7900);  //读EOC
+			 temp = temp & 0x01;
+		  }
+          temp=io_read(0x7a00);      //读转换数据（置OE有效）
+	  f=(float)temp/51;
+	  printf("   %4d    %1.3f V\n",temp,f);
+	}	  
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();

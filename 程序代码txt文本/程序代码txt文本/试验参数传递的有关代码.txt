@@ -1,0 +1,64 @@
+
+中断服务例程中试验的有关部分
+
+	if( (s0&0x1)==0x1 )
+		{   m_IoPortRange0.outd(0x40,0x0);     //清（用户实验板）中断
+	t << "------Exp. Board interrupt ----"<< EOL;
+	t <<"in_uch="<<in_uch<< EOL;    ////
+	t <<"in_ush="<<in_ush<< EOL;    ////
+        out_ush[4]=in_ush;      ////
+	out_long[0]=in_long[0]; ////
+	out_long[1]=in_long[1]; ////
+	out_long[2]=in_long[2]; ////
+        t <<"in_long[0]="<<in_long[0]<< EOL;  ////
+        t <<"in_long[1]="<<in_long[1]<< EOL;  ////
+        t <<"in_long[2]="<<in_long[2]<< EOL;  ////
+	t <<"in_long[3]="<<in_long[3]<< EOL;  ////
+
+
+
+
+************************************************************************
+ 
+主程序中试验的有关部分
+
+        io_write(0x7e03,0x36);    //CNT0   CLK0接QA（4.9152MHz 2分频）0.005秒定时中断 
+   	io_write(0x7e00,48);
+	io_write(0x7e00,0);
+	
+	io_write(0x7e03,0x76);    //CNT1   
+   	io_write(0x7e01,0);
+	io_write(0x7e01,1);
+	
+	outportb(0x4c,1);
+   
+	DeliverToLamp(36);    ////
+        UCHAR ch;             ////
+	ch=DeliverFromLamp(); ////
+        printf("%d ",ch);     ////
+    
+	int i;                   ////
+	to_uch=0x77;             ////
+	to_ush=0x4321;           ////
+        for(i=0;i<4;i++)         ////
+	  {to_long[i]=0x100*i;}  ////
+        DeliverToInVariable();   ////
+
+       for(;;)	                      ////
+        { long int k;                 ////
+	  DeliverFromOutVariable();   ////
+	  printf("%x ",from_long[0]); ////
+	  printf("%x ",from_long[1]); ////
+	  printf("%x ",from_long[2]); ////
+	  printf("%x ",from_ush[4]);  ////
+	  for(k=1;k<1000000;k++);     ////
+         }
+
+       printf("\n**************************************\n");
+       printf("\n按回车键，程序结束运行。 \n");
+       getchar();
+       outportb(0x4c,0);
+
+	//以下两行用于关闭设备和结束运行
+	CloseIfOpen();
+        return 0;

@@ -1,0 +1,36 @@
+	//根据需要定义局部变量
+      int              i,lenth;
+	USHORT           temp; 
+        int              num;                 		
+
+	//以下自行编写所进行的实验代码	    
+       printf("输入一个数（1～95）并回车:");
+
+	io_write(0x7e03,0x34);    //CNT0   方式2
+        io_write(0x7e00,100);
+	io_write(0x7e00,0x0);
+
+lp:	scanf("%d",&num); 
+	if(num==0) exit(1);	        
+	io_write(0x7e03,0x72);   //CNT1   方式1 
+        io_write(0x7e01,num);
+	io_write(0x7e01,0);
+		    
+	lenth=4000;
+	for (i=0;i<lenth;i++)
+	{ 	io_write(0x7a07,0);      // 送A/D通道地址，启动转换
+		temp=io_read(0x7900);    //读EOC
+		temp = temp & 0x01;
+		while(temp == 0)
+		{ temp=io_read(0x7900)& 0x01; 
+		}
+		temp=io_read(0x7a00);      //读转换数据（置OE有效）
+		source.iData[i] = temp;
+	}
+
+	setClipData(lenth);
+  
+	printf("\n*********************************\n数据已复制到剪贴板,请运行虚拟示波器程序DummyShow.exe! \n");
+        printf("\n看过后请关闭该示波器程序，然后再输入一个数（1～95）并回车: ");
+	getchar();
+	goto lp;

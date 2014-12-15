@@ -1,0 +1,14 @@
+//根据需要定义局部变量
+ int  i,k;
+   long int j; 
+   UCHAR temp;
+	
+    printf("\n将A口设置成方式0输出, B口设置成方式0输出 \n");
+     io_write(0x7d03,0x81); 
+  
+    io_write(0x7d01,0xff); 
+	io_write(0x7d00,0xff);
+	
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();

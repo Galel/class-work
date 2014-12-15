@@ -1,0 +1,40 @@
+    //根据需要定义局部变量
+   
+     int m,wn;
+     ULONG j,k,val;                		
+
+     //以下自行编写所进行的实验代码	    
+      k=1000000;
+      wn=8192;     //32位存储单元的个数
+      io_write(0x9c00,1);
+                  		
+      printf("\n初始化DMA\n");
+      DMAINI();
+    
+      printf("\n写SRAM...m*1 \n");  
+      for (m=0;m<wn;m++)
+		  {  WRITESRAM(m,m*1); }  //可修改写入数据
+
+      printf("\nDMA写\n");
+      DMAWRITE(wn*4);    
+	 
+      for (j=0;j<k;j++);	
+      
+      printf("\nDMA读...\n");
+      DMAREAD(wn*4);
+      
+      for (j=0;j<k;j++); 
+      
+      printf("\n读SRAM...\n\n");
+      for (m=0;m<wn;m++)
+	   {  val=READSRAM(m);
+              printf("%8x  ",val);  
+	      if (m%256==255) 
+		  {  printf("\n按任一键，程序继续。 \n");
+			  getchar();}
+	   }
+      printf("\n");
+	  
+      printf("******************************************************\n");
+      printf("\n按回车键，程序结束运行。 \n");
+	  getchar(); 

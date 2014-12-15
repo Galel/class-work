@@ -1,0 +1,58 @@
+   
+	 int clk1,clk2;
+        
+     #define PORT_A  0x7d00
+     #define PORT_B  0x7d01
+     #define CTRL    0x7d03
+                
+     static UCHAR add_row,add_column,key_code; 
+     UCHAR  add_column2;
+     static UCHAR key_code2,view_code;
+	
+lp:
+     io_write(CTRL,0x82);  // 初始化8255A，A方式0输出，B口方式0输入
+     io_write(PORT_A,0x0);     // A口输出全0，判有无键按下
+     add_column = io_read(PORT_B);      // 读取B口
+     add_column = add_column & 0x0f;
+     if (add_column == 0x0f)  {goto lp; }// 
+        
+        clk1=clock();
+		do
+			{clk2=clock();}
+		 while((clk2-clk1)<20);
+	 add_column2 = io_read(PORT_B);      // 读取B口
+     add_column2 = add_column2 & 0x0f;
+     if (add_column2 != add_column) { goto lp;} //
+                
+	  io_write(CTRL,0x90);    // 重新设置，A方式0输入，B口方式0输出 
+      io_write(PORT_B,add_column); 
+      add_row=io_read(PORT_A);
+	  add_row=add_row&0x0f;
+      key_code=(add_row<<4)+add_column;
+	  switch(key_code)
+			{case 0xee: key_code2=0;break;
+                 case 0xed: key_code2=1;break;
+                 case 0xeb: key_code2=2;break;
+                 case 0xe7: key_code2=3;break;
+                 case 0xde: key_code2=4;break;
+                 case 0xdd: key_code2=5;break;
+                 case 0xdb: key_code2=6;break;
+                 case 0xd7: key_code2=7;break;
+                 case 0xbe: key_code2=8;break;
+                 case 0xbd: key_code2=9;break;
+                 case 0xbb: key_code2=10;break;
+                 case 0xb7: key_code2=11;break;
+                 case 0x7e: key_code2=12;break;
+                 case 0x7d: key_code2=13;break;
+                 case 0x7b: key_code2=14;break;
+                 case 0x77: key_code2=15;break;
+                 default: break;
+		}
+	
+	   printf("%x ",key_code2); 
+       do
+			{clk2=clock();}
+	   while((clk2-clk1)<400);
+
+       goto lp;
+    

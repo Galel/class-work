@@ -1,0 +1,53 @@
+
+   #define PORT_C  0x7d02
+  #define CTRL    0x7d03
+ long int i,j;              
+ UCHAR add_row,add_column,add_column2,key_code,key_code2;  
+
+lp: for(;; )
+	{ io_write(CTRL,0x8a); // 初始化8255A，C高4位口为方式0输入，C低4位口为方式0输出
+     
+      io_write(PORT_C,0x0);     // C低4位口输出全0，判有无键按下
+      add_column = io_read(PORT_C);      // 读取C高4位口
+      add_column = add_column & 0xf0;
+      if (add_column == 0xf0)  continue; // 没有按键按下，继续判有无键按下
+      for(j=0;j<=10000;j++);
+      add_column2 = io_read(PORT_C);      // 读取C高4位口
+      add_column2 = add_column2 & 0xf0;
+     if (add_column2 != add_column)  continue;
+
+     io_write(CTRL,0x83);    // 重新设置C高4位口为方式0输出，C低4位口为方式0输入 
+        
+      io_write(PORT_C,add_column); 
+      add_row=io_read(PORT_C);
+	  add_row=add_row&0x0f;
+      break;
+}
+     key_code=add_column+add_row;
+	
+     switch(key_code)
+	 {case 0xee: key_code2=0;break;
+      case 0xed: key_code2=1;break;
+      case 0xeb: key_code2=2;break;
+      case 0xe7: key_code2=3;break;
+      case 0xde: key_code2=4;break;
+      case 0xdd: key_code2=5;break;
+      case 0xdb: key_code2=6;break;
+      case 0xd7: key_code2=7;break;
+      case 0xbe: key_code2=8;break;
+      case 0xbd: key_code2=9;break;
+      case 0xbb: key_code2=10;break;
+      case 0xb7: key_code2=11;break;
+      case 0x7e: key_code2=12;break;
+      case 0x7d: key_code2=13;break;
+      case 0x7b: key_code2=14;break;
+      case 0x77: key_code2=15;break;
+      default: break;
+	 }
+	 printf("%2x  ",key_code2);
+     for(j=0;j<=20000000;j++);
+     goto lp;
+ 
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();  

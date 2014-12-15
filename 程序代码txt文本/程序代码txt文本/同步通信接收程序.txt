@@ -1,0 +1,37 @@
+        //根据需要定义局部变量
+	int i;
+	unsigned char a;
+
+	//以下自行编写所进行的实验代码	    
+
+	io_write(0x7f01,0x40);	//发软件复位操作命令控制字
+	for(i=0;i<1000;i++);
+	io_write(0x7f01,0x0c);	//发方式选择控制字
+							//内同步方式、双字符，无奇偶校验、8位数据位
+	for(i=0;i<1000;i++);
+	io_write(0x7f01,0x16);	//写第一个同步字符
+	for(i=0;i<100;i++);
+
+	io_write(0x7f01,0x16);	//写第二个同步字符
+	for(i=0;i<1000;i++);
+     
+	
+lp:  io_write(0x7f01,0x96);	//发操作命令控制字
+							//清除错误、请求发送、置数据终端就绪、允许接受、允许发送
+     for(i=0;i<1000;i++);
+
+    while((io_read(0x7f01) & 0x40)==0);   //同步检测
+    cout<<"***** 已同步 *****"<<endl;
+
+lp1: while((io_read(0x7f01) & 0x02)==0);     
+     a=io_read(0x7f00);
+     if(a==0xff) {printf("0xff "); goto lp; }
+	 if(a==0x16) printf("0x16 "); //显示发送期间自动插入的同步字符（未及时向发送缓冲器送数据）
+	 if((a>=32)&&(a<255)) printf("%c",a);
+	 if(a=='$')  {  printf("\n\n");             
+                goto lp;
+				} 
+     
+     goto lp1;
+
+ 

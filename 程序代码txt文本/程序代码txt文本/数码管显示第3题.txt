@@ -1,0 +1,44 @@
+   
+     #define PORT_A  0x7d00
+     #define PORT_B  0x7d01
+	 #define PORT_C  0x7d02
+     #define CTRL    0x7d03
+                
+     UCHAR bit1,bit2,bit3,bit4,bit_counter,view_code;
+     long int i,j;
+     unsigned int a,a1,a2,a3; 
+     io_write(CTRL,0x80);  // 初始化8255A，A口、B口、C口均为方式0输出
+      
+for(;;)
+{     printf("\n\n---------------------------------------------\n");
+	  printf("输入一个十进制数（0～9999, 大于9999为退出）：");
+	  scanf("%d",&a);
+	  if (a>9999) break; 
+	  bit4=a%10;
+      a1=(a-bit4)/10;
+      bit3=a1%10;
+	  a2=(a1-bit3)/10;
+      bit2=a2%10;
+      a3=(a2-bit2)/10;
+      bit1=a3%10;
+	 for(i=0;i<20000;i++)      
+	 {    
+	 bit_counter=bit_counter>>1;
+	    if(bit_counter<0x10) bit_counter=0x80; 
+	    switch(bit_counter)
+		 {case 0x10: view_code=bit1+0x10;break;
+                  case 0x20: view_code=bit2+0x20;break;
+                  case 0x40: view_code=bit3+0x40;break;
+                  case 0x80: view_code=bit4+0x80;break;
+                  default: break;
+		}
+	    io_write(PORT_C,view_code);
+        for(j=0;j<100000;j++);
+	 }
+
+}
+	
+	printf("\n\n**********************************************\n");
+        printf("\n按回车键，程序结束运行。 \n");
+	getchar();
+

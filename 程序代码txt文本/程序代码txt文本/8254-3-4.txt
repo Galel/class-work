@@ -1,0 +1,36 @@
+
+        int              i,lenth;
+	USHORT           temp; 
+                  		
+
+	//以下自行编写所进行的实验代码	    
+  
+	io_write(0x7e03,0x36);    //CNT0   方式3
+        io_write(0x7e00,0);
+	io_write(0x7e00,0x0b);
+	        
+	io_write(0x7e03,0x74);   //CNT1   方式2 ( 方式3:0x76)
+        io_write(0x7e01,20);
+	io_write(0x7e01,0);
+	
+	io_write(0x7e03,0xb2);   //CNT2   方式1
+        io_write(0x7e02,5);
+	io_write(0x7e02,0);
+    
+	lenth=2000;
+	for (i=0;i<lenth;i++)
+	{ 	io_write(0x7a07,0);      // 送A/D通道地址，启动转换
+		temp=io_read(0x7900);    //读EOC
+		temp = temp & 0x01;
+		while(temp == 0)
+		{ temp=io_read(0x7900)& 0x01; 
+		}
+		temp=io_read(0x7a00);      //读转换数据（置OE有效）
+		source.iData[i] = temp;
+	}
+
+	setClipData(lenth);
+  
+	printf("*************************************\n数据已复制到剪贴板,请运行虚拟示波器程序DummyShow.exe! \n");
+        printf("\n按回车键，程序结束运行。 \n");
+	getchar();

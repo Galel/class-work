@@ -1,0 +1,39 @@
+//根据需要定义局部变量
+   
+     int i;
+    ULONG temp;
+
+	//以下自行编写所进行的实验代码	    
+     printf("\n写片内SRAM....(i=0;i<256;i++)  i*0x10 \n");
+     io_write(0x9c00,0);      //写片内SRAM
+	 for (i=0;i<256;i++)
+		{ sram_write(i,i*0x10); }
+	 
+	 printf("\n写片外SRAM....(i=0;i<8192;i++)   i*0x1 \n");
+	 io_write(0x9c00,1);      //写片外SRAM
+     for (i=0;i<8192;i++)
+		{ sram_write(i,i*0x1); 	}	
+     
+	 printf("\n读片内SRAM: \n");
+	 io_write(0x9c00,0);      //读片内SRAM
+     for (i=0;i<=255;i++)
+		{ temp=sram_read(i);  
+	 	  printf("%8x  ",temp);	}
+     
+	 printf("\n");
+
+	 printf("\n读片外SRAM: \n");
+     io_write(0x9c00,1);      //读片外SRAM
+	 for (i=0;i<8192;i++)
+		{ temp=sram_read(i);  
+	      printf("%8x  ",temp);  
+	      if (i%256==255) 
+		  {  printf("\n按任一键，程序继续。 \n");
+			  getchar();}	 
+	  
+	 
+	 }
+   
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();

@@ -1,0 +1,29 @@
+
+  #define addr_273 0x5000 
+  #define addr_244 0x5800   
+  int i;
+  long int j;	
+  UCHAR temp;
+lp:
+    	for (i=0;i<=255;i++)
+	{ io_write(addr_273,i);    // 开出
+	  temp=io_read(addr_244);  // 开入
+          printf("%x  ",temp);
+     	for (j=0;j<=500000;j++);
+
+	}	
+     printf("\n\n");
+	for (j=0;j<=100000000;j++);
+	for (i=255;i>=0;i--)
+	{ io_write(addr_273,i);    // 开出
+        temp=io_read(addr_244);  // 开入
+       	printf("%x  ",temp);
+     	for (j=0;j<=500000;j++);
+	} 
+     printf("\n\n");
+    for (j=0;j<=100000000;j++);
+goto lp;           
+
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();

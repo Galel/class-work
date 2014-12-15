@@ -1,0 +1,28 @@
+//根据需要定义局部变量
+  int i,j;
+    UCHAR temp;
+	
+    printf("\n将A口设置成方式0输出, B口设置成方式0输入 \n");
+     io_write(0x7d03,0x83); 
+    printf("\n按递增规律向A口输出数据, 从B口输入 \n");
+    
+
+   
+
+	for(i=0;i<=255;i++) 
+	{ io_write(0x7d00,i);
+          temp=io_read(0x7d01);      
+	  printf("%2x  ",temp); }
+    printf("\n\n");
+    
+	printf("\n按递减规律向A口输出数据, 从B口输入 \n");
+    for(i=255;i>=0;i--) 
+	{ io_write(0x7d00,i);
+          temp=io_read(0x7d01);      
+	  printf("%2x  ",temp); }
+    printf("\n\n");
+     
+
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();

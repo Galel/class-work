@@ -1,0 +1,32 @@
+   //根据需要定义局部变量
+    
+    int              i,j,m,n,lenth;
+    USHORT           temp; 
+    		
+
+   //以下自行编写所进行的实验代码	    
+    lenth=512;
+    n=0;
+    for (m=0;m<=1;m++)
+	{
+	 for (i=0;i<=255;i++)
+	{ printf("%4d",i);
+	  io_write(0x7c00,i);     // D/A输出
+	  for (j=0;j<30000;j++);   //延时
+	  io_write(0x7a06,0);      // 送A/D通道地址0，启动转换（与数据无关）
+          temp=io_read(0x7900)& 0x01;       //读EOC
+	  while(temp == 0)
+	   {  temp=io_read(0x7900)& 0x01;   }  //读EOC
+          //for (j=0;j<=30000;j++);
+	  temp=io_read(0x7a00);      //读转换数据（置OE有效）
+	  printf("%4d;",temp);
+	  source.iData[n++] = temp;
+	  if(i%8==7 ) printf("\n");
+	}
+    
+	}
+	setClipData(lenth);
+	printf("\n");
+	printf("*************************************\n数据已复制到剪贴板,请运行虚拟示波器程序DummyShow.exe! \n");
+        printf("\n按回车键，程序结束运行。 \n");
+	getchar();

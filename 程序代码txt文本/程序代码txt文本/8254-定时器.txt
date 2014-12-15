@@ -1,0 +1,39 @@
+ long int         i,clk1,clk2;
+	USHORT           temp; 
+                 		
+
+	//以下自行编写所进行的实验代码	    
+    	
+	io_write(0x7e03,0x36);    //CNT0   
+   	io_write(0x7e00,80);
+	io_write(0x7e00,0);
+	
+	io_write(0x7e03,0x76);    //CNT1   
+   	io_write(0x7e01,0);
+	io_write(0x7e01,12);
+    
+	io_write(0x7e03,0xb0);    //CNT2   
+   	io_write(0x7e02,0);
+	io_write(0x7e02,0); 
+	
+    //outportb(0x58,1);  //允许ext_int1中断请求信号产生
+	outportb(0x4c,1);  //开中断 
+
+    clk1=clock(); //  需引用math.h  !!!
+    do
+		{ clk2=clock();}
+	 while ((clk2-clk1)<1000);
+    clk1=clk2;
+    temp=io_read(0x7e02)+io_read(0x7e02)*256; 
+    do
+		{ clk2=clock();}
+	 while ((clk2-clk1)<5000);
+	
+    io_write(0x7e03,0xd8);  //锁存3个计数器的计数值
+	temp=temp-(io_read(0x7e02)+io_read(0x7e02)*256);      
+	printf("%d \n",temp);
+  	
+    printf("\n按回车键，程序结束运行。 \n");
+	getchar();
+	outportb(0x58,0);  //禁止ext_int1中断请求信号产生
+	outportb(0x4c,0);  //关中断关中断/关中断/关中断

@@ -1,0 +1,39 @@
+	//根据需要定义局部变量
+  unsigned int  i,k;
+   long int j; 
+   UCHAR temp;
+	
+    printf("\n将A口设置成方式0输出, B口设置成方式0输出 \n");
+    io_write(0x7d03,0x81); 
+    i=1;
+ll:   
+    
+    io_write(0x7d01,i);
+	switch(i){
+	case 0x01: io_write(0x7d00,0x01);
+		       break;
+	case 0x02: io_write(0x7d00,0x03);
+		       break;
+	case 0x04: io_write(0x7d00,0x07);
+		       break;
+    case 0x08: io_write(0x7d00,0x0f);
+		       break;
+	case 0x10: io_write(0x7d00,0x1f);
+		       break;
+	case 0x20: io_write(0x7d00,0x3f);
+		       break;	   
+	case 0x40: io_write(0x7d00,0x7f);
+		       break;	   
+	case 0x80: io_write(0x7d00,0xff);
+		       break;	  
+	default:   io_write(0x7d00,0);
+	   	       break;
+	}
+	for(j=0;j<100000;j++);io_write(0x7d00,0);
+	i=i<<1;if(i>0x80) i=0x01;
+	for(j=0;j<10000;j++);
+goto ll;
+
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();

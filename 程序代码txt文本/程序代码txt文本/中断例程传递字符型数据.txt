@@ -1,0 +1,35 @@
+
+
+
+中断服务例程中
+
+           PVOID p,k;
+	   char temp1,temp2;
+
+
+           temp1='A'; temp2='B';
+	   p=(PVOID)&temp1;
+	   k=(PVOID)&temp2;
+	   
+	   m_DpcFor_Irq.Request(p, k);  
+
+中断延时例程中
+  
+ 方案1
+	char temp1,temp2;
+	ULONG disp_v;
+	temp1=*((char *)Arg1);
+	temp2=*((char *)Arg2);
+	
+	if(temp1=='A') disp_v=0x777777;
+	   else k=0x0;   
+	  
+  方案2      
+        char *temp1,*temp2;
+	ULONG k;
+	temp1=(char *)Arg1;
+	temp2=(char *)Arg2;
+	
+	if(temp1[0]=='A') disp_v=0x777777;
+	   else k=0x0;
+	

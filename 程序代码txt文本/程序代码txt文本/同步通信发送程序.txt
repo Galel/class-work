@@ -1,0 +1,42 @@
+       //根据需要定义局部变量
+	int i,temp,len;
+	//char str[1024];
+	//char str1[1024];
+	char *pt,a;
+
+	char m[]="  Test Board SComm OK!abcdefghijklmop ........0123456789 0123456789$";
+       m[0]=0x16;
+       m[1]=0x16;
+       len=strlen(m);
+ 
+	//以下自行编写所进行的实验代码	    
+
+	io_write(0x7f01,0x40);	//发软件复位操作命令控制字
+	for(i=0;i<100;i++);
+	io_write(0x7f01,0x0c);	//发方式选择控制字
+							//异步方式、无奇偶校验、8位数据位、波特率因子16
+	for(i=0;i<100;i++);
+	io_write(0x7f01,0x16);
+	for(i=0;i<100;i++);
+	io_write(0x7f01,0x16);
+    
+	printf("%d",len); 
+
+lp:	io_write(0x7f01,0xb7);	//发操作命令控制字
+							//清除错误、请求发送、置数据终端就绪、允许接受、允许发送
+        cout<<"\n已操作命令控制字，允许发送"<<endl;
+
+	pt=&m[0];
+	while(pt<&m[0]+len)
+		{ while((io_read(0x7f01)&0x01)==0);
+	      io_write(0x7f00,(UCHAR)(*pt)); pt++;  }
+ 
+       while((io_read(0x7f01)&0x04)==0);
+	
+
+	io_write(0x7f01,0x10);	//发操作命令控制字,禁止发送
+    
+	cout<<"\n\n已发操作命令控制字，禁止发送 **********************"<<endl;
+        printf("\n按回车键，程序继续。 \n");
+        getchar();
+        goto lp;

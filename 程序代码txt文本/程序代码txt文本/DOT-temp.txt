@@ -1,0 +1,44 @@
+//根据需要定义局部变量
+     int  i,k;
+   long int j; 
+   UCHAR temp;
+
+   //以下自行编写所进行的实验代码
+    printf("\n将A口设置成方式0输出, B口设置成方式0输出 \n");
+     io_write(0x7d03,0x81); 
+ll:   
+    io_write(0x7d01,0xff); 
+	i=0x01;
+for(k=0;k<40;k++)	
+{	io_write(0x7d00,i);
+    for(j=0;j<5000000;j++);
+    i=i*2;if(i>0x80) i=0x01;
+}   
+	i=0x80;
+for(k=0;k<40;k++)	
+{	io_write(0x7d00,i);
+    for(j=0;j<5000000;j++);
+    i=i/2;if(i<1) i=0x80;
+}   
+   
+   io_write(0x7d00,0xff); 
+	i=0x01;
+for(k=0;k<40;k++)	
+{	io_write(0x7d01,i);
+    for(j=0;j<5000000;j++);
+    i=i*2;if(i>0x80) i=0x01;
+}   
+	i=0x80;
+for(k=0;k<40;k++)	
+{	io_write(0x7d01,i);
+    for(j=0;j<5000000;j++);
+    i=i/2;if(i<1) i=0x80;
+}   	
+   
+    
+goto ll;
+     
+
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();

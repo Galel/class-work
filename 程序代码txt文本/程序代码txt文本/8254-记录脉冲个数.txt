@@ -1,0 +1,42 @@
+//根据需要定义局部变量
+   int          i,clk1,clk2;
+	USHORT       temp[3]; 
+                 		
+
+	//以下自行编写所进行的实验代码	    
+        
+	io_write(0x7e03,0x30);    //CNT0   
+   	io_write(0x7e00,0);
+	io_write(0x7e00,0);
+	
+	io_write(0x7e03,0x70);    //CNT1   
+   	io_write(0x7e01,0);
+	io_write(0x7e01,0);
+
+    io_write(0x7e03,0xb0);    //CNT2   
+   	io_write(0x7e02,0);
+	io_write(0x7e02,0);
+
+    clk1=clock(); //  需引用time.h  !!!
+    do
+	{ clk2=clock();}
+	 while ((clk2-clk1)<1000);
+
+    clk1=clk2;
+    io_write(0x7e03,0xde);  //锁存3个计数器的计数值
+	for(i=0;i<3;i++)
+	{  temp[i]=io_read(0x7e00+i)+io_read(0x7e00+i)*256;  }
+
+    do
+	{ clk2=clock();}
+	 while ((clk2-clk1)<10000);
+	io_write(0x7e03,0xde);  //锁存3个计数器的计数值
+	for(i=0;i<3;i++)
+	{  temp[i]=temp[i]-(io_read(0x7e00+i)+io_read(0x7e00+i)*256);      
+	   printf("%d; ",temp[i]);
+    }
+	
+	printf("\n");
+   
+    printf("\n按回车键，程序结束运行。 \n");
+	getchar();

@@ -1,0 +1,25 @@
+ 
+实验8-3-2-1
+        outportb(0x58,1);  //允许ext_int1中断请求信号产生
+	outportb(0x4c,1);  //开中断 
+	    
+	io_write(0x7e03,0x36);    //CNT0   方式3
+        io_write(0x7e00,226);
+	io_write(0x7e00,125);
+	
+        
+	io_write(0x7e03,0x74);   //CNT1   方式2
+        io_write(0x7e01,8);
+	io_write(0x7e01,0);
+	
+	io_write(0x7e03,0xb2);   //CNT2   方式1
+        io_write(0x7e02,5);
+	io_write(0x7e02,0);
+    
+	printf("************************\n中断已允许,请观察DriverMonitor窗口 !\n");
+	printf("\n按回车键,关闭中断,程序结束运行。");
+	getchar();
+
+        outportb(0x58,0);  //禁止ext_int1中断请求信号产生
+	outportb(0x4c,0);  //关中断
+   

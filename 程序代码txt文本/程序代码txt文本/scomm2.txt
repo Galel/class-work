@@ -1,0 +1,39 @@
+//根据需要定义局部变量
+ 	
+   UCHAR temp;
+    long int i,j,len;
+	char a,*pt,*pr;
+	char rxd[1024];
+	char m[]="Test Board SComm OK!   ";
+    len=strlen(m);
+	pr=&rxd[0];
+	pt=&m[0];
+
+	//以下自行编写所进行的实验代码	    
+    outportb(0x4c,1);
+    io_write(0x7f01,0x36);
+	for(i=0;i<1000000;i++);
+    //io_write(0x3801,0x40);
+	io_write(0x7f01,0x40);
+    for(i=0;i<10000000;i++);
+	io_write(0x7f01,0xce);
+    for(i=0;i<1000000;i++);
+    io_write(0x7f01,0x37);
+for(;;)
+{
+    while((io_read(0x7f01)&0x02)==0);
+    a=*pr=io_read(0x7f00);pr++;
+    if(a=='$')
+	{*(--pr)=0;pr=&rxd[0];
+	 printf("%s",rxd);
+     if(*pr=='D')
+	 { while(pt<&m[0]+len)
+		{ while((io_read(0x7f01)&0x01)==0);
+	      io_write(0x7f00,(UCHAR)(*pt));	pt++;      }
+       pt=&m[0]; 
+     }
+    }
+}		
+    printf("\n**************************************\n");
+    printf("\n按回车键，程序结束运行。 \n");
+    getchar();

@@ -1,0 +1,212 @@
+/*     
+// 定时发送字符串用 中断处理例程
+BOOLEAN PcinkckDevice::Isr_Irq(void)
+{   static ULONG aa=0;
+    static ULONG b=0;
+	static ULONG c=0;
+	static ULONG d=0;
+    USHORT s0,s1,s2;
+	static ULONG watch_dog=0;
+    static char m=0;
+   
+	PVOID p,k;
+	ULONG temp1,temp2;
+ 
+     #define SCOMM_CMD    0x7f01
+     #define SCOMM_DATA   0x7f00
+    
+	   
+	 static UCHAR len=20;
+	 static char a,*pt,*pr;
+	 static char rxd[1024];
+	 static char txd[]="Exp. Board SComm OK!   ";
+    	
+	 static int nt=0;
+	 static int nr=0;
+	 pt=&txd[0];
+	 pr=&rxd[0];
+	 
+    len=in_ush;  /////
+   	
+	s0=(USHORT)m_IoPortRange0.ind(0x40);   //读中断寄存器0（对应用户实验板中断）
+	s1=(USHORT)m_IoPortRange0.ind(0x44);   //读中断寄存器1（对应1秒钟定时中断）
+	s2=m_IoPortRange0.ind(0x4);            //读DMA中断寄存器（对应DMA）
+	if( ((s0&0x1)!=0x1) && ((s1&0x1)!=0x1) && ((s2&0x3)!=0x3))	return FALSE;
+    
+    if(m==0)
+		{ out_portb(0x9000, 0x1); m=1;	}
+	  else
+		{ out_portb(0x9000, 0x0); m=0;	}
+
+	if( (s1&0x1)==0x1)                     
+	{   m_IoPortRange0.outd(0x44,0x0);     //清（1秒钟定时）中断
+	    out_portb(SCOMM_CMD,0x10);    //若有错，则清除
+	   	nt=0; 
+		out_portb(SCOMM_CMD,0x23);     //允许发送中断
+	   	   
+	   b=b+1;if (b>100000000) b=0;
+	   t << "============1S Interrupt========="<< EOL;
+       t <<"b="<< b<< EOL; 
+	
+	   temp1=4; temp2=5;
+	   p=(PVOID)&temp1;
+	   k=(PVOID)&temp2;
+	   m_DpcFor_Irq.Request(p, k);  //请求调用Dpc（进入Dpc处理队列），并传送参数
+	}
+
+	  if( (s0&0x1)==0x1 )
+	{   m_IoPortRange0.outd(0x40,0x0);     //清（用户实验板）中断
+	    //t << "------Exp. Board interrupt ----"<< EOL;
+        aa=in_portb(SCOMM_CMD);
+		t << "aa="<< aa<< EOL;
+	    switch(aa & 0xff)
+		{
+		case 0x85: 
+		case 0x81: if (nt<len)
+				   {out_portb(SCOMM_DATA,*(pt+nt));nt++;}   // 未发送完毕,继续发送
+		           else
+				   { nt=0; 
+					 out_portb(SCOMM_CMD,0x10); 
+					 t << "TXD-end******"<< EOL;
+					 d=d+1;if (d>100000000) d=0;  //  new add
+	                 t << "d="<< d<< EOL;         //
+					}
+                   break;
+       
+		default:     //nt=0; 
+					 out_portb(SCOMM_CMD,0x10); 
+			         break;
+		}
+
+	
+	}
+	
+	if ((s2&0x3)==0x3) 
+	{	m_IoPortRange0.outd(0x4,0x2);     //清（DMA）中断	
+		c=c+1;if (c>100000000) c=0;
+	    t <<"*************DMA interrupt*************"<< EOL;
+        t <<"c="<< c<< EOL; 
+	}
+ 
+ 	return TRUE;
+}
+*/
+
+// 中断方法扫描键盘并数码管显示用 中断服务例程
+BOOLEAN PcinkckDevice::Isr_Irq(void)
+{   static ULONG a=0;
+    static ULONG b=0;
+	static ULONG c=0;
+    USHORT s0,s1,s2;
+	
+    static char m=0;
+
+    PVOID p,k;
+    ULONG temp1,temp2;
+ 
+     #define PORT_C  0x7d02
+     #define CTRL    0x7d03
+     #define PORT273  0x7800
+     long int i,j;              
+     static UCHAR add_row,add_column,key_code; 
+     UCHAR  add_column2;
+     static UCHAR key_code2,view_code;
+	 static UCHAR bit1=0;
+     static UCHAR bit2=0;
+     static UCHAR bit3=0;
+     static UCHAR bit4=0;
+     static UCHAR bit_counter=0x80;
+     static UCHAR flag1=0;
+     static UCHAR flag2=0;
+
+     s0=(USHORT)m_IoPortRange0.ind(0x40);   //读中断寄存器0（对应用户实验板中断）
+     s1=(USHORT)m_IoPortRange0.ind(0x44);   //读中断寄存器1（对应1秒钟定时中断）
+     s2=m_IoPortRange0.ind(0x4);            //读DMA中断寄存器（对应DMA）
+     if( ((s0&0x1)!=0x1) && ((s1&0x1)!=0x1) && ((s2&0x3)!=0x3))	return FALSE;
+    
+    if(m==0)
+		{ out_portb(0x9000, 0x1); m=1;	}
+	  else
+		{ out_portb(0x9000, 0x0); m=0;	}
+ 
+		if( (s0&0x1)==0x1 )
+		{   m_IoPortRange0.outd(0x40,0x0);     //清（用户实验板）中断
+	    t << "------Exp. Board interrupt ----"<< EOL;
+		
+		a=a+1; if(a>100000) a=0;
+       	if ((a%20==0) && (flag1==0) )  //每0.1秒时扫描小键盘
+		{ out_portb(CTRL,0x8a);  // 初始化8255A，C高4位口为方式0输入，C低4位口为方式0输出
+                  out_portb(PORT_C,0x0);     // C低4位口输出全0，判有无键按下
+                  add_column = in_portb(PORT_C);      // 读取C高4位口
+                 add_column = add_column & 0xf0;
+                 if (add_column != 0xf0)  {flag1=1;a=0; }// 有键按下，置标志1
+        	}
+        if ((a==5) && (flag1==1) ) 
+		{add_column2 = in_portb(PORT_C);      // 读取C高4位口
+                 add_column2 = add_column2 & 0xf0;
+                 if (add_column2 != add_column) {flag1=0; goto ext;} // 和前面不同，清标志1，退出
+                 flag2=1;  // 延时后键仍为按下状态，置标志2
+		 out_portb(CTRL,0x83);    // 重新设置C高4位口为方式0输出，C低4位口为方式0输入 
+                 out_portb(PORT_C,add_column); 
+                 add_row=in_portb(PORT_C);
+	         add_row=add_row&0x0f;
+      
+                 key_code=add_column+add_row;
+	        switch(key_code)
+		{case 0xee: key_code2=0;break;
+                 case 0xed: key_code2=1;break;
+                 case 0xeb: key_code2=2;break;
+                 case 0xe7: key_code2=3;break;
+                 case 0xde: key_code2=4;break;
+                 case 0xdd: key_code2=5;break;
+                 case 0xdb: key_code2=6;break;
+                 case 0xd7: key_code2=7;break;
+                 case 0xbe: key_code2=8;break;
+                 case 0xbd: key_code2=9;break;
+                 case 0xbb: key_code2=10;break;
+                 case 0xb7: key_code2=11;break;
+                 case 0x7e: key_code2=12;break;
+                 case 0x7d: key_code2=13;break;
+                 case 0x7b: key_code2=14;break;
+                 case 0x77: key_code2=15;break;
+                 default: break;
+		}
+	  }
+    
+	if ((a==40) && (flag2==1) )  //再延时0.2秒，进行移位操作，并清flag1和flag2
+	 { bit1=bit2;bit2=bit3;bit3=bit4;bit4=key_code2; flag1=0; flag2=0;
+	   lamp=255;  ////
+     }
+ ext: bit_counter=bit_counter>>1;
+	    if(bit_counter<0x10) bit_counter=0x80; 
+	    switch(bit_counter)
+		 {case 0x10: view_code=bit1+0x10;break;
+                  case 0x20: view_code=bit2+0x20;break;
+                  case 0x40: view_code=bit3+0x40;break;
+                  case 0x80: view_code=bit4+0x80;break;
+                  default: break;
+		}
+	    out_portb(PORT273,view_code);
+		out_ush[4]=key_code2;  ////
+	}
+
+	if( (s1&0x1)==0x1)                     
+	{   m_IoPortRange0.outd(0x44,0x0);     //清（1秒钟定时）中断
+	   b=b+1;if (b>100000000) b=0;
+	   t << "============1S Interrupt========="<< EOL;
+           t <<"b="<< b<< EOL; 
+	
+	   temp1=4; temp2=5;
+	   p=(PVOID)&temp1;
+	   k=(PVOID)&temp2;
+	   m_DpcFor_Irq.Request(p, k);  //请求调用Dpc（进入Dpc处理队列），并传送参数
+	}
+	
+	if ((s2&0x3)==0x3) 
+	{   m_IoPortRange0.outd(0x4,0x2);     //清（DMA）中断	
+	    c=c+1;if (c>100000000) c=0;
+	    t <<"*************DMA interrupt*************"<< EOL;
+            t <<"c="<< c<< EOL; 
+	}
+ 
+ 	return TRUE;

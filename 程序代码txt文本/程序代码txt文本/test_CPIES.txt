@@ -1,0 +1,100 @@
+UCHAR a;
+	 char a1;
+     int i,m,wn;
+     ULONG j,k,val;                		
+     ULONG temp;
+
+     //以下自行编写所进行的实验代码	    
+      printf("\n本测试程序可测试PCI板工作是否正常以及用户实验板上的大部分信号是否正确。");
+	  printf("\n请检查是否按规定进行了连线。若正确，请按回车键，开始测试。 \n");
+	  printf("\n（建议将此控制台窗口设置成80列宽、40行高） \n");
+	  getchar();
+	  
+	  for (i=0;i<=255;i++)
+	  { io_write(0x9800,i);    // 开出（内置的开关量输出端口）
+        a=io_read(0x9400);  // 开入（内置的开关量输入端口）
+     	printf("%x  ",a);
+	  }	
+       printf("\n\n");
+	   for (i=255;i>=0;i--)
+	   { io_write(0x9800,i);    // 开出（内置的开关量输出端口）
+    	 a=io_read(0x9400);  // 开入（内置的开关量输入端口）
+         printf("%x  ",a);
+	   }	
+        printf("\n\n");
+	  
+	   printf("\n以上测试的是FPGA片内I/O端口的读写操作，数据显示的规律是从0到ff，再从ff到0。\n");
+	   printf("若正确，请按回车键，测试程序继续。 \n");
+	   getchar();
+	  
+	  
+	  k=1000000;
+      wn=256;     //32位存储单元的个数
+      io_write(0x9c00,0);
+                  		
+      printf("\n初始化DMA\n");
+      DMAINI();
+    
+      printf("\n写SRAM...m*1 \n");  
+      for (m=0;m<wn;m++)
+		  {  WRITESRAM(m,m*1); }  //可修改写入数据
+
+      printf("\nDMA写\n");
+      DMAWRITE(wn*4);    
+	 
+      for (j=0;j<k;j++);	
+      
+      printf("\nDMA读...\n");
+      DMAREAD(wn*4);
+      
+      for (j=0;j<k;j++); 
+      
+      printf("\n读SRAM...\n\n");
+      for (m=0;m<wn;m++)
+	   {  val=READSRAM(m);
+          printf("%8x  ",val);  
+	     	  
+	   }
+      printf("\n刚刚测试的是FPGA片内的SRAM，进行DMA操作，数据显示的规律是每次加1：从0到ff。\n");
+	  printf("若正确，请按回车键，测试程序继续。 \n");
+	  getchar();
+	  
+	  printf("\n写片外SRAM....(i=0;i<256;i++)   i*0x100001 \n");
+      io_write(0x9c00,1);      //写片外SRAM
+	  for (i=0;i<256;i++)
+		{ sram_write(i,i*0x100001); }
+	 
+	  
+	 printf("\n读片外SRAM: \n");
+	 io_write(0x9c00,1);      //读片外SRAM
+     for (i=0;i<=255;i++)
+		{ temp=sram_read(i);  
+	 	  printf("%8x  ",temp);	}
+     
+	  printf("\n刚刚测试的是用户实验板上的SRAM，进行通常的读写操作，数据显示的规律是每次加0x100001：从0到ff000ff。\n");
+	  printf("若正确，请按回车键，测试程序继续。 \n");
+	  getchar();
+	  
+      io_write(0x9000,1);
+      printf("\n现在测试的是中断服务指示灯（在用户实验板的左上方），当前发兰色光。\n");
+	  printf("若正确，请按回车键，测试程序继续。 \n");
+	  getchar();
+  
+	  io_write(0x9000,0); 
+
+      printf("\n现在中断服务指示灯应熄灭\n");
+	  printf("若正确，请按回车键，测试程序继续。 \n");
+	  getchar();
+
+        
+      io_write(0x7d03,0x83);  //将A口设置成方式0输出, B口设置成方式0输入
+      
+	  printf("\n现在测试8255A，通过开关提供的8位数据由B口读入，再经过A口至LED模块显示出来。\n");
+lp:	  printf("准备好开关数据后，请按回车键，测试程序继续。\n");
+	  getchar();
+	  a=io_read(0x7d01);
+      io_write(0x7d00,a);
+      printf("\n请检查LED显示是否与开关设置一致（开关置上，对应的LED亮；置下，对应的LED灭）。\n");
+	  printf("继续进行该项测试，请直接按回车键；按其他键之后再按回车键，结束测试。\n");     
+	  a1=getchar();
+	  if(a1==10) goto lp;
